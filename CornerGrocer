@@ -1,0 +1,146 @@
+#include <iostream>
+#include <fstream>
+#include <map> // Header file to use map functions
+#include <string> // Included to use 'std::getline' function
+#include <limits> // Included to use 'numeric_limits' for user input handling
+
+class CornerGrocer {
+private:
+    std::map<std::string, int> itemFrequency; // Map to store item frequencies
+
+public:
+    // Function to read data from input file and populate itemFrequency map
+    bool readInputFile(const std::string& fileName) {
+        std::ifstream inputFile(fileName);
+        std::string itemName;
+
+        /* Check if the file opened successfully
+        True if open and false if failed to open*/
+        if (!inputFile.is_open()) {
+            std::cout << "Failed to open the file.\n";
+            return false; 
+        }
+
+        // Read file contents
+        while (std::getline(inputFile, itemName)) {
+            // Increment the frequency for each item encountered
+            itemFrequency[itemName]++;
+        }
+
+        inputFile.close();
+        return true;
+    }
+
+    // Function to display menu options
+    void displayMenu() {
+        std::cout << "Menu:\n";
+        std::cout << "1. Enter item\n";
+        std::cout << "2. Display item frequencies\n";
+        std::cout << "3. Display item histogram\n";
+        std::cout << "4. Exit\n";
+    }
+
+    // Function to search for a specific item and display its frequency
+    void searchForItem() {
+        std::string itemName;
+        std::cout << "Enter the item to search for: ";
+        std::cin >> itemName;
+
+        if (itemFrequency.find(itemName) != itemFrequency.end()) {
+            std::cout << "Frequency of " << itemName << ": " << itemFrequency[itemName] << "\n";
+        }
+        else {
+            std::cout << "Item not found.\n";
+        }
+    }
+
+    // Function to display item frequencies
+    void displayItemFrequencies() {
+        std::cout << "Item Frequencies:\n";
+        // Pairs the item with its frequency(how many times it occurs)
+        for (const auto& pair : itemFrequency) {
+            std::cout << pair.first << " " << pair.second << "\n";
+        }
+    }
+
+    // Function to display item histogram
+    void displayItemHistogram() {
+        std::cout << "Item Histogram:\n";
+        for (const auto& pair : itemFrequency) {
+            std::cout << pair.first << " ";
+            for (int i = 0; i < pair.second; ++i) {
+                std::cout << "*";
+            }
+            std::cout << "\n";
+        }
+    }
+
+    // Function to save data to backup file (frequency.dat)
+    void saveDataToFile(const std::string& fileName) {
+        std::ofstream outputFile(fileName);
+        for (const auto& pair : itemFrequency) {
+            outputFile << pair.first << " " << pair.second << "\n";
+        }
+        outputFile.close();
+    }
+};
+
+// Function to get user choice with input validation
+int getUserChoice() {
+    int choice;
+    while (true) {
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
+
+        if (std::cin.fail()) {
+            // Input is not an integer
+            std::cin.clear(); // Clear the error flag
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard invalid input
+            std::cout << "Invalid input. Please enter a valid integer.\n";
+        }
+        else if (choice < 1 || choice > 4) {
+            // Input is not within the valid range
+            std::cout << "Invalid input. Please enter a valid choice (1-4).\n";
+        }
+        else {
+            // Input is a valid integer and within the range of choices
+            break;
+        }
+    }
+
+    return choice;
+}
+
+int main() {
+    CornerGrocer cornerGrocer;
+    if (cornerGrocer.readInputFile("CS210_Project_Three_Input_File.txt")) {
+        int choice;
+        do {
+            cornerGrocer.displayMenu();
+            choice = getUserChoice();
+
+            switch (choice) {
+            case 1:
+                cornerGrocer.searchForItem();
+                break;
+            case 2:
+                cornerGrocer.displayItemFrequencies();
+                break;
+            case 3:
+                cornerGrocer.displayItemHistogram();
+                break;
+            case 4:
+                cornerGrocer.saveDataToFile("frequency.dat");
+                std::cout << "Data saved to frequency.dat. Exiting program.\n";
+                break;
+            default:
+                std::cout << "Invalid choice. Please enter a valid option.\n";
+            }
+        } while (choice != 4);
+    }
+    else {
+        // File failed to open, handle the error or exit the program
+        std::cout << "Exiting program due to a failed file open.\n";
+    }
+    return 0;
+}
